@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>nav导航</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+
+        body{
+            font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;
+            background:linear-gradient(135deg,#eff6ff 0%,#dbeafe 30%,#bfdbfe 60%,#93c5fd 100%);
+            color:#1e293b;
+            height:100vh;
+            overflow:hidden
+        }
+
+        .app{
+            display:flex;
+            height:100vh;
+            background:rgba(255,255,255,0.7);
+            backdrop-filter:blur(20px);
+            -webkit-backdrop-filter:blur(20px)
+        }
+
+        .sidebar{
+            width:320px;
+            background:rgba(255,255,255,0.85);
+            backdrop-filter:blur(20px);
+            -webkit-backdrop-filter:blur(20px);
+            border-right:1px solid rgba(59,130,246,0.1);
+            display:flex;
+            flex-direction:column;
+            box-shadow:4px 0 24px rgba(37,99,235,0.06)
+        }
+
+        .sidebar-header{
+            padding:20px 20px 16px;
+            border-bottom:1px solid rgba(59,130,246,0.08);
+            background:linear-gradient(135deg,rgba(219,234,254,0.5),rgba(191,219,254,0.3))
+        }
+
+        .sidebar-header h2{
+            font-size:1.2rem;
+            font-weight:700;
+            color:#1e40af;
+            display:flex;
+            align-items:center;
+            gap:8px;
+            margin-bottom:4px
+        }
+
+        .sidebar-header p{
+            font-size:0.75rem;
+            color:#64748b;
+            font-weight:500
+        }
+
+        .category-tabs{
+            display:flex;
+            gap:6px;
+            padding:12px 16px;
+            background:rgba(255,255,255,0.6)
+        }
+
+        .cat-tab{
+            flex:1;
+            text-align:center;
+            padding:8px 10px;
+            font-size:0.8rem;
+            font-weight:600;
+            color:#64748b;
+            cursor:pointer;
+            border:1.5px solid rgba(59,130,246,0.15);
+            background:rgba(255,255,255,0.8);
+            border-radius:24px;
+            transition:all 0.005s;
+            position:relative;
+            overflow:hidden
+        }
+
+        .cat-tab:active{
+            transform:scale(0.9);
+            transition:transform 0.005s;
+            background:rgba(59,130,246,0.2)
+        }
+
+        .cat-tab:hover{
+            background:rgba(219,234,254,0.6);
+            border-color:rgba(59,130,246,0.3);
+            color:#1e40af;
+            transform:translateY(-2px);
+            box-shadow:0 4px 12px rgba(37,99,235,0.2);
+            transition:all 0.005s
+        }
+
+        .cat-tab.active{
+            background:linear-gradient(135deg,#3b82f6,#2563eb);
+            color:#fff;
+            border-color:transparent;
+            box-shadow:0 4px 16px rgba(37,99,235,0.35);
+            animation:tabPulse 2s ease-in-out infinite
+        }
+
+        .doc-list{
+            flex:1;
+            overflow-y:auto;
+            padding:8px 10px;
+            scrollbar-width:thin;
+            scrollbar-color:rgba(59,130,246,0.2) transparent;
+            background:rgba(255,255,255,0.3)
+        }
+
+        .doc-list::-webkit-scrollbar{width:4px}
+        .doc-list::-webkit-scrollbar-track{background:transparent}
+        .doc-list::-webkit-scrollbar-thumb{background:rgba(59,130,246,0.2);border-radius:10px}
+
+        .doc-item{
+            padding:12px 16px;
+            margin:3px 0;
+            border-radius:12px;
+            cursor:pointer;
+            transition:all 0.005s;
+            display:flex;
+            align-items:center;
+            gap:10px;
+            color:#475569;
+            font-size:0.85rem;
+            font-weight:500;
+            border:2px solid transparent;
+            background:rgba(255,255,255,0.7);
+            position:relative;
+            overflow:visible
+        }
+
+        .doc-item:hover{
+            background:rgba(219,234,254,0.85);
+            border-color:#3b82f6;
+            transform:translateX(5px) scale(1.02);
+            box-shadow:0 6px 20px rgba(37,99,235,0.2);
+            z-index:10;
+            transition:all 0.005s
+        }
+
+        .doc-item:active{
+            transform:scale(0.92);
+            transition:transform 0.005s;
+            background:#bfdbfe;
+            border-color:#2563eb
+        }
+
+        .doc-item.active{
+            background:linear-gradient(135deg,#dbeafe,#bfdbfe);
+            border-color:#2563eb;
+            color:#1e40af;
+            font-weight:600;
+            box-shadow:0 4px 16px rgba(37,99,235,0.2);
+            transform:translateX(6px) scale(1.03)
+        }
+
+        .doc-icon{
+            width:18px;
+            height:18px;
+            opacity:0.7;
+            flex-shrink:0;
+            transition:all 0.005s
+        }
+
+        .doc-item:hover .doc-icon{
+            transform:rotate(-10deg) scale(1.2);
+            opacity:1;
+            color:#2563eb;
+            transition:all 0.005s
+        }
+
+        .doc-item:active .doc-icon{
+            transform:rotate(15deg) scale(0.9);
+            transition:all 0.005s
+        }
+
+        .doc-info{flex:1;min-width:0}
+        .doc-title{font-weight:550;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:all 0.005s}
+
+        .doc-item:hover .doc-title{
+            letter-spacing:0.02em;
+            color:#1e40af;
+            transition:all 0.005s
+        }
+
+        .doc-filename{font-size:0.68rem;color:#94a3b8;margin-top:2px;font-weight:450;transition:all 0.005s}
+        .doc-item:hover .doc-filename{color:#3b82f6;transition:all 0.005s}
+        .doc-item.active .doc-filename{color:#2563eb}
+
+        .ripple-effect{
+            position:absolute;
+            border-radius:50%;
+            background:rgba(59,130,246,0.4);
+            transform:scale(0);
+            animation:ripple 0.15s ease-out;
+            pointer-events:none
+        }
+
+        @keyframes ripple{
+            to{transform:scale(15);opacity:0}
+        }
+
+        .empty-state{padding:50px 20px;text-align:center;color:#94a3b8;font-size:0.85rem}
+        .empty-state svg{width:40px;height:40px;margin-bottom:16px;opacity:0.4}
+
+        .content{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+        .content-header{
+            padding:16px 28px;
+            border-bottom:1px solid rgba(59,130,246,0.08);
+            background:rgba(255,255,255,0.7);
+            backdrop-filter:blur(20px);
+            -webkit-backdrop-filter:blur(20px);
+            display:flex;
+            align-items:center;
+            justify-content:space-between
+        }
+
+        .content-title{
+            font-size:1.05rem;
+            font-weight:600;
+            color:#1e40af;
+            display:flex;
+            align-items:center;
+            gap:10px
+        }
+
+        .content-badge{
+            background:linear-gradient(135deg,#dbeafe,#bfdbfe);
+            color:#1e40af;
+            padding:3px 12px;
+            border-radius:20px;
+            font-size:0.7rem;
+            font-weight:600;
+            border:1px solid rgba(59,130,246,0.2)
+        }
+
+        .content-body{
+            flex:1;
+            overflow-y:auto;
+            padding:32px 40px;
+            scroll-behavior:smooth;
+            background:rgba(255,255,255,0.35)
+        }
+
+        .markdown-body{
+            max-width:860px;
+            margin:0 auto;
+            line-height:1.7;
+            font-size:0.92rem
+        }
+
+        .markdown-body h1{
+            font-size:2rem;
+            font-weight:700;
+            margin-top:0;
+            margin-bottom:1rem;
+            padding-bottom:0.5rem;
+            border-bottom:2px solid rgba(59,130,246,0.2);
+            color:#1e3a5f
+        }
+        .markdown-body h2{font-size:1.45rem;font-weight:650;margin-top:1.8rem;margin-bottom:0.8rem;color:#1e40af}
+        .markdown-body h3{font-size:1.2rem;font-weight:600;margin-top:1.4rem;margin-bottom:0.6rem;color:#334155}
+        .markdown-body p{margin-bottom:1rem;color:#475569}
+        .markdown-body code{background:rgba(59,130,246,0.08);padding:0.2rem 0.4rem;border-radius:5px;font-size:0.85em;color:#1e40af;font-weight:500}
+        .markdown-body pre{background:#1e293b;border-radius:12px;padding:1.2rem;overflow-x:auto;margin:1.4rem 0;box-shadow:0 4px 16px rgba(0,0,0,0.06)}
+        .markdown-body pre code{background:0 0;padding:0;color:#e2e8f0;font-weight:400}
+        .markdown-body blockquote{border-left:3px solid #3b82f6;padding-left:1rem;margin:1.2rem 0;color:#64748b;font-style:italic;background:rgba(219,234,254,0.3);padding:0.8rem 1rem;border-radius:0 10px 10px 0}
+        .markdown-body ul,.markdown-body ol{margin:1rem 0;padding-left:1.8rem}
+        .markdown-body li{margin:0.4rem 0}
+        .markdown-body a{color:#2563eb;text-decoration:underline;font-weight:500;cursor:pointer}
+        .markdown-body a:hover{color:#1d4ed8;text-decoration:underline}
+        .markdown-body table{width:100%;border-collapse:collapse;margin:1.2rem 0;border-radius:10px;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,0.03)}
+        .markdown-body td,.markdown-body th{border:1px solid rgba(59,130,246,0.12);padding:0.7rem;text-align:left}
+        .markdown-body th{background:rgba(219,234,254,0.4);font-weight:600}
+
+        .iframe-container{
+            width:100%;
+            height:100%;
+            border:1px solid rgba(59,130,246,0.12);
+            border-radius:14px;
+            overflow:hidden;
+            background:#fff;
+            box-shadow:0 6px 20px rgba(37,99,235,0.05)
+        }
+        .iframe-container iframe{width:100%;height:100%;border:none;border-radius:14px}
+
+        .welcome-message{
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            height:100%;
+            text-align:center;
+            color:#94a3b8
+        }
+        .welcome-message svg{width:80px;height:80px;margin-bottom:24px;opacity:0.25}
+        .welcome-message h3{font-size:1.5rem;font-weight:600;margin-bottom:8px;color:#64748b}
+        .welcome-message p{color:#94a3b8;font-weight:450}
+
+        .loading-spinner{display:flex;align-items:center;justify-content:center;height:100%}
+        .spinner{
+            width:38px;height:38px;
+            border:3px solid rgba(59,130,246,0.15);
+            border-top-color:#3b82f6;
+            border-radius:50%;
+            animation:spin 0.6s infinite linear
+        }
+
+        @keyframes spin{to{transform:rotate(360deg)}}
+        @keyframes tabPulse{0%,100%{box-shadow:0 4px 16px rgba(37,99,235,0.35)}50%{box-shadow:0 4px 24px rgba(37,99,235,0.55)}}
+
+        @media(max-width:768px){
+            .sidebar{width:280px}
+            .content-body{padding:24px 20px}
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h5"/>
+                    </svg>
+                    导航列表
+                </h2>
+                <p id="sidebarHint">/md/ 目录下的站内文档</p>
+            </div>
+            <div class="category-tabs">
+                <button class="cat-tab active" data-cat="md">📄 站内文档</button>
+                <button class="cat-tab" data-cat="html">🌐 站内访问</button>
+            </div>
+            <div class="doc-list" id="docList">
+                <div class="empty-state"><p>正在检测文件...</p></div>
+            </div>
+        </div>
+        <div class="content">
+            <div class="content-header" id="contentHeader">
+                <div class="content-title">
+                    <span id="currentDocTitle">选择导航文件</span>
+                    <span class="content-badge" id="docBadge" style="display:none"></span>
+                </div>
+            </div>
+            <div class="content-body" id="contentBody">
+                <div class="welcome-message">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h5"/>
+                    </svg>
+                    <h3>欢迎使用 LYM2394 的导航</h3>
+                    <p>请从左侧选择一个文件开始阅读</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        (function(){
+            "use strict";
+            
+            // 配置 marked - 恢复默认行为，不覆盖 renderer
+            if(typeof marked!=='undefined'){
+                marked.setOptions({
+                    sanitize: false,
+                    breaks: true,
+                    gfm: true,
+                    headerIds: false,
+                    mangle: false
+                });
+                // 不自定义 renderer，让 marked 使用默认的链接和图片渲染
+            }
+
+            const TOTAL_FILES=100;
+            const CONCURRENCY=15;
+            const docListEl=document.getElementById('docList');
+            const contentBody=document.getElementById('contentBody');
+            const currentDocTitle=document.getElementById('currentDocTitle');
+            const docBadge=document.getElementById('docBadge');
+            const sidebarHint=document.getElementById('sidebarHint');
+
+            let currentCategory='md';
+            let activeFile=null;
+            const docItems=new Map();
+            const cache=new Map();
+            const listLoaded={md:false,html:false};
+            const cachedLists={md:null,html:null};
+
+            document.querySelectorAll('.cat-tab').forEach(tab=>{
+                tab.addEventListener('click',function(){
+                    const cat=this.dataset.cat;
+                    if(cat===currentCategory)return;
+                    
+                    this.style.transform='scale(0.9)';
+                    setTimeout(()=>{this.style.transform=''},5);
+                    
+                    document.querySelectorAll('.cat-tab').forEach(t=>t.classList.remove('active'));
+                    this.classList.add('active');
+                    currentCategory=cat;
+                    sidebarHint.textContent=cat==='md'?'/md/ 目录下的站内文档':'/html/ 目录下的网站页面';
+                    loadOrShowList(cat);
+                    contentBody.innerHTML=`<div class="welcome-message"><h3>${cat==='md'?'站内文档':'站内网站'}</h3><p>点击左侧文件加载内容</p></div>`;
+                    currentDocTitle.textContent='选择导航文件';
+                    docBadge.style.display='none';
+                    activeFile=null
+                })
+            });
+
+            function pad(i){return i.toString().padStart(2,'0')}
+
+            async function checkInfo(index,category){
+                const p=pad(index);
+                const url=category==='md'?`./md/${p}.md`:`./html/${p}.html`;
+                try{
+                    const r=await fetch(url,{method:'HEAD'});
+                    if(!r.ok)return null;
+                    const t=await(await fetch(url)).text();
+                    let title=null;
+                    if(category==='md'){
+                        const m=t.match(/^#\s+(.*)/m);
+                        if(m)title=m[1].trim()
+                    }else{
+                        const m=t.match(/<title>(.*?)<\/title>/i);
+                        if(m)title=m[1].trim()
+                    }
+                    if(!title)title=`${p}.${category}`;
+                    let html='';
+                    if(category==='md'){
+                        html=typeof marked!=='undefined'?marked.parse(t):`<pre>${t}</pre>`
+                    }else{
+                        html=url
+                    }
+                    return{title,html,filename:`${p}.${category}`,exists:true,category}
+                }catch(e){
+                    return null
+                }
+            }
+
+            async function loadOrShowList(category){
+                if(listLoaded[category]&&cachedLists[category]){
+                    renderList(cachedLists[category],category);
+                    return
+                }
+                docListEl.innerHTML='<div class="empty-state"><p>正在检测文件...</p></div>';
+                const results=[];
+                for(let i=0;i<TOTAL_FILES;i+=CONCURRENCY){
+                    const batch=[];
+                    for(let j=i;j<Math.min(i+CONCURRENCY,TOTAL_FILES);j++)batch.push(checkInfo(j+1,category));
+                    results.push(...await Promise.all(batch))
+                }
+                cachedLists[category]=results;
+                listLoaded[category]=true;
+                renderList(results,category)
+            }
+
+            function renderList(results,category){
+                docListEl.innerHTML='';
+                docItems.clear();
+                let hasDocs=false;
+                results.forEach((doc,idx)=>{
+                    const index=idx+1;
+                    if(doc&&doc.exists){
+                        hasDocs=true;
+                        const key=category+'-'+pad(index);
+                        cache.set(key,doc);
+                        const div=document.createElement('div');
+                        div.className='doc-item';
+                        div.dataset.index=index;
+                        div.dataset.cat=category;
+                        const t=doc.title.length>28?doc.title.slice(0,26)+'…':doc.title;
+                        div.innerHTML=`
+                            <svg class="doc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h5"/>
+                            </svg>
+                            <div class="doc-info">
+                                <div class="doc-title">${e(t)}</div>
+                                <div class="doc-filename">${doc.filename}</div>
+                            </div>`;
+                        
+                        div.addEventListener('mousedown',function(e){
+                            // 立即执行动画，不等待
+                            const ripple=document.createElement('span');
+                            ripple.className='ripple-effect';
+                            const rect=this.getBoundingClientRect();
+                            const size=Math.max(rect.width,rect.height);
+                            ripple.style.width=ripple.style.height=size+'px';
+                            ripple.style.left=(e.clientX-rect.left-size/2)+'px';
+                            ripple.style.top=(e.clientY-rect.top-size/2)+'px';
+                            this.appendChild(ripple);
+                            setTimeout(()=>ripple.remove(),150);
+                            
+                            this.style.transform='scale(0.92)';
+                            setTimeout(()=>{
+                                this.style.transform='';
+                            },5);
+                        });
+                        
+                        div.addEventListener('click',function(){
+                            loadDoc(index,category);
+                        });
+                        
+                        docListEl.appendChild(div);
+                        docItems.set(key,div)
+                    }
+                });
+                if(!hasDocs)docListEl.innerHTML='<div class="empty-state"><p>未检测到文件</p><p style="margin-top:8px;font-size:0.8rem;">目录当前没有可用文件</p></div>'
+            }
+
+            async function loadDoc(index,category){
+                if(activeFile){
+                    const pk=activeFile.category+'-'+pad(activeFile.index);
+                    const pi=docItems.get(pk);
+                    if(pi)pi.classList.remove('active')
+                }
+                const ck=category+'-'+pad(index);
+                const ci=docItems.get(ck);
+                if(ci)ci.classList.add('active');
+                activeFile={index,category};
+                if(cache.has(ck)){
+                    displayDoc(cache.get(ck),index,category);
+                    return
+                }
+                contentBody.innerHTML='<div class="loading-spinner"><div class="spinner"></div></div>';
+                currentDocTitle.textContent='加载中...';
+                docBadge.style.display='none';
+                const doc=await checkInfo(index,category);
+                if(doc&&doc.exists){
+                    cache.set(ck,doc);
+                    displayDoc(doc,index,category);
+                    if(ci){
+                        const tl=ci.querySelector('.doc-title');
+                        tl.textContent=doc.title.length>28?doc.title.slice(0,26)+'…':doc.title
+                    }
+                }else{
+                    contentBody.innerHTML='<div class="welcome-message"><h3>无法加载文件</h3><p>文件可能已被移除或无法访问</p></div>';
+                    currentDocTitle.textContent='选择导航文件'
+                }
+            }
+
+            function displayDoc(doc,index,category){
+                currentDocTitle.textContent=doc.title;
+                docBadge.textContent=doc.filename;
+                docBadge.style.display='inline-block';
+                if(category==='md'){
+                    contentBody.innerHTML=`<div class="markdown-body">${doc.html}</div>`;
+                    if(typeof hljs!=='undefined'){
+                        contentBody.querySelectorAll('pre code').forEach(b=>{
+                            if(!b.classList.contains('hljs'))hljs.highlightElement(b)
+                        })
+                    }
+                }else{
+                    contentBody.innerHTML=`<div class="iframe-container"><iframe src="./html/${doc.filename}" sandbox="allow-same-origin allow-scripts" title="${doc.title}"></iframe></div>`
+                }
+            }
+
+            function e(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML}
+
+            loadOrShowList('md')
+        })();
+    </script>
+</body>
+</html>
