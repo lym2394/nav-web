@@ -1,3 +1,17 @@
+# Nav-web打造你的导航网
+# 点击[Fork](https://github.com/lym2394/nav-web/fork)
+## 点击settings
+## 点击pages
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/11d16d87-44d4-46d6-b734-b8a414dc19fc" />
+
+## 选择main
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/8649b57a-31fd-44c0-81a5-772156410940" />
+
+## 点击save
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/8064157a-1c89-43a3-a2b6-767c905ca536" />
+
+## 点击view site访问网站
+
 # nav-web
 这是完整的使用教程，直接保存为 `/md/01.md` 即可：
 
